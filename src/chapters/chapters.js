@@ -117,8 +117,8 @@ export default function Chapters({ route }) {
         <Box flex={1} flexDirection="column" marginBottom={4} paddingX={4}>
 
             <VStack space={2} mb={4}>
-                <Progress colorScheme="green" value={percentage} mx="0" my="3" w="100%" />
-                <Text fontSize="sm" textAlign="center">{`${percentage.toFixed(0)}% Concluído`}</Text>
+                <Progress size="sm" colorScheme="green" value={percentage} mx="0" my="3" w="100%" />
+                <Text fontSize="sm" textAlign="center" bold color="gray.500">{`${percentage.toFixed(0)}% Concluído`}</Text>
             </VStack>
 
             <FlatList

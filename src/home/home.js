@@ -29,8 +29,10 @@ export default function Home({ navigation }) {
         if (query.trim() === "") {
             setFilteredData(data);
         } else {
+            const normalizedQuery = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
             const filtered = data.filter((book) =>
-                book.name.toLowerCase().includes(query.toLowerCase())
+                book.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().includes(normalizedQuery)
             );
             setFilteredData(filtered);
         }
