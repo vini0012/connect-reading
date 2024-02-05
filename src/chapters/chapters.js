@@ -27,7 +27,7 @@ const ChapterItem = memo(({ item, onToggle, isReadOnly }) => {
 
     return (
         <Box flex={1} flexDirection="column">
-            <HStack w="100%" justifyContent="space-between" alignItems="center" p="2">
+            <HStack w="100%" justifyContent="space-between" alignItems="center" p="2" borderBottomWidth="1" borderBottomColor="gray.900">
                 <Checkbox
                     isChecked={item.read}
                     onChange={handleToggle}
@@ -118,7 +118,7 @@ export default function Chapters({ route }) {
 
             <VStack space={2} mb={4}>
                 <Progress size="sm" colorScheme="green" value={percentage} mx="0" my="3" w="100%" />
-                <Text fontSize="sm" textAlign="center" bold color="gray.500">{`${percentage.toFixed(0)}% Concluído`}</Text>
+                <Text fontSize="sm" my="-3" textAlign="center" bold color="gray.500">{`${percentage.toFixed(0)}% Concluído`}</Text>
             </VStack>
 
             <FlatList
