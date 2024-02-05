@@ -56,15 +56,14 @@ export default function Books({ data, navigation }) {
                                 size="sm"
                                 _text={{ fontSize: 'sm' }}
                                 px="3"
-                                leftIcon={<Icon as={MaterialIcons} name="info-outline" size="lg" color="blue.400" />}
+                                leftIcon={<Icon as={MaterialIcons} name="info-outline" size="lg" color="blue.300" />}
                         >
                         </Button>
                     </Center>
                 </Box>
 
                 <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-                    <Modal.Content maxWidth="700px">
-                        <Modal.CloseButton />
+                    <Modal.Content maxWidth="500px">
                         <Box backgroundColor="black" p="4" borderBottomWidth="0.7" borderBottomColor="#E0E0E0">
                             <Text fontSize="lg" color="white" bold numberOfLines={1} ellipsizeMode="tail">
                                 Panorama de {data.name}
@@ -81,6 +80,15 @@ export default function Books({ data, navigation }) {
                                 {data.observation && <RenderTextWithBoldLabel text={ data.observation } />}
                             </VStack>
                         </Modal.Body>
+                        <Modal.Footer bg="black">
+                            <Button.Group space={2}>
+                                <Button variant="ghost" onPress={() => {
+                                    setShowModal(false);
+                                }} _text={{ color: "white" }} >
+                                    Fechar
+                                </Button>
+                            </Button.Group>
+                        </Modal.Footer>
                     </Modal.Content>
                 </Modal>
             </Box>
