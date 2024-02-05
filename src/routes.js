@@ -40,13 +40,13 @@ export default function Routes() {
                 <Stack.Screen
                     name="Home"
                     component={Home}
-                    options={{ title: 'Connect Bíblia180' }}
+                    options={{ title: 'CONNECT180' }}
                 />
                 <Stack.Screen
                     name="Chapters"
                     component={Chapters}
                     options={{
-                        title: 'Progresso',
+                        title: 'CONNECT180',
                         headerTitleStyle: {
                             fontFamily: Platform.OS === 'android' ? 'Roboto' : 'System',
                             fontSize: 18,
