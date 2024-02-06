@@ -2,6 +2,9 @@ import React, {memo, useEffect, useReducer, useState} from 'react';
 import {Box, Checkbox, FlatList, HStack, IconButton, Pressable, Progress, Text, VStack} from 'native-base';
 import {MaterialIcons} from "@expo/vector-icons";
 import {eventManager} from "../EventManager";
+import {useIsFocused} from "@react-navigation/native";
+import useStorage from "../hooks/useStorage";
+import {getCache, setCache} from "../hooks/cache";
 
 const chaptersPerPage = 15;
 
@@ -46,12 +49,21 @@ const ChapterItem = memo(({ item, onToggle, isReadOnly }) => {
 
 export default function Chapters({ route }) {
     const book = route.params.book;
+    const bookId = route.params.book.id;
 
     // Usando useReducer para inicializar e gerenciar o estado dos capítulos
     const [isDisabled, setIsDisabled] = useState(false);
     const [chapters, dispatch] = useReducer(chapterReducer, book.chapters || []);
     const [currentPage, setCurrentPage] = useState(1);
     const [percentage, setPercentage] = useState(() => calculateInitialPercentage(book.chapters));
+    const { saveItem, getItem } = useStorage();
+    const focused = useIsFocused();
+
+    useEffect(() => {
+        const startIndex = (currentPage - 1) * chaptersPerPage;
+        const endIndex = startIndex + chaptersPerPage;
+
+    }, [currentPage, chapters]);
 
     useEffect(() => {
         const newPercentage = (chapters.filter(chapter => chapter.read).length / chapters.length) * 100;
@@ -59,10 +71,30 @@ export default function Chapters({ route }) {
     }, [chapters]);
 
     useEffect(() => {
-        const startIndex = (currentPage - 1) * chaptersPerPage;
-        const endIndex = startIndex + chaptersPerPage;
+        async function loadBook() {
+            let cachedBook = getCache(`@book_${bookId}`);
 
-    }, [currentPage, chapters]);
+            if (!cachedBook) {
+                console.log("Carregando dados do AsyncStorage...");
+                const storedBook = await getItem("@books", bookId);
+
+                if (storedBook) {
+                    setCache(`@book_${bookId}`, storedBook);
+                    cachedBook = storedBook;
+                }
+            }
+
+            if (cachedBook) {
+                dispatch({ type: 'update_chapters', chapters: cachedBook.chapters });
+                const updatedPercentage = calculateInitialPercentage(cachedBook.chapters);
+                setPercentage(updatedPercentage);
+            }
+        }
+
+        if (focused) {
+            loadBook();
+        }
+    }, [focused]);
 
     // Função para lidar com a marcação dos capítulos
     const handleCheck = (indexWithinPage) => {
@@ -85,6 +117,8 @@ export default function Chapters({ route }) {
         };
 
         eventManager.publish("bookUpdated", updatedBook);
+        saveBook(updatedBook);
+        setCache(`@book_${bookId}`, updatedBook);
 
         setTimeout(() => {
             setIsDisabled(false);
@@ -92,12 +126,18 @@ export default function Chapters({ route }) {
 
     };
 
+    async function saveBook(book) {
+        await saveItem("@books", book);
+        console.log("Livro salvo com sucesso", book);
+    }
+
     const totalChapters = chapters.length;
     const totalPages = Math.ceil(totalChapters / chaptersPerPage);
 
     function calculateInitialPercentage(chapters) {
         if (!chapters || chapters.length === 0) return 0;
-        return (chapters.filter(chapter => chapter.read).length / chapters.length) * 100;
+        const readChapters = chapters.filter(chapter => chapter.read).length;
+        return (readChapters / chapters.length) * 100;
     }
 
     // Calculando os capítulos a serem exibidos com base na página atual diretamente no render

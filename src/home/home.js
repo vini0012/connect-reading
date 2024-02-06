@@ -4,14 +4,52 @@ import Books from "../books/books";
 import {MaterialIcons} from "@expo/vector-icons";
 import data from "../books/booksData";
 import {eventManager} from "../EventManager";
+import useStorage from "../hooks/useStorage";
+import {useIsFocused} from "@react-navigation/native";
+import {getCache, setCache} from "../hooks/cache";
 
 export default function Home({ navigation }) {
 
     const [searchQuery, setSearchQuery] = useState("");
     const [filteredData, setFilteredData] = useState(data);
     const [isInputVisible, setIsInputVisible] = useState(true);
-    const inputRef = useRef(null);
     const [lastScrollY, setLastScrollY] = useState(0);
+    const [booksData, setBooksData] = useState([]);
+
+    const inputRef = useRef(null);
+    const { getAllItems, saveItem } = useStorage();
+    const isFocused = useIsFocused();
+
+    const loadBooksData = async () => {
+        let booksData = getCache("@books");
+
+        if (!booksData || booksData.length === 0) {
+            console.log("Carregando dados do AsyncStorage...");
+            booksData = await getAllItems("@books");
+
+            if (booksData.length === 0) {
+                // Se o storage também estiver vazio, utiliza os dados padrão
+                booksData = [...data];
+                // Salva os dados padrão no AsyncStorage para uso futuro
+                for (const book of booksData) {
+                    await saveItem("@books", book);
+                }
+            }
+
+            setCache("@books", booksData);
+        }
+
+        // Ordena e atualiza os estados com os dados dos livros
+        const sortedBooks = booksData.sort((a, b) => a.id - b.id);
+        setBooksData(sortedBooks);
+        setFilteredData(sortedBooks);
+    };
+
+    useEffect(() => {
+        if (isFocused) {
+            loadBooksData();
+        }
+    }, [isFocused]);
 
     const handleScroll = (event) => {
         const currentScrollY = event.nativeEvent.contentOffset.y;
@@ -27,11 +65,11 @@ export default function Home({ navigation }) {
     const handleSearch = (query) => {
         setSearchQuery(query);
         if (query.trim() === "") {
-            setFilteredData(data);
+            setFilteredData(booksData);
         } else {
             const normalizedQuery = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-            const filtered = data.filter((book) =>
+            const filtered = booksData.filter((book) =>
                 book.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().includes(normalizedQuery)
             );
             setFilteredData(filtered);
@@ -56,7 +94,6 @@ export default function Home({ navigation }) {
         );
     };
 
-
     return (
         <Box flex={1} flexDirection="column" >
             {isInputVisible && (
@@ -77,7 +114,15 @@ export default function Home({ navigation }) {
                             <Pressable onPress={() => inputRef.current?.focus()}>
                                 <Icon as={<MaterialIcons name="search" />} size="md" mr="-1" color="muted.400" />
                             </Pressable>
-                        }/>
+                        }
+                        InputRightElement={
+                            searchQuery.length > 0 ? (
+                                <Pressable onPress={() => { setSearchQuery(''); setFilteredData(booksData); }}>
+                                    <Icon as={<MaterialIcons name="close" />} size="md" mr="2" color="muted.400" />
+                                </Pressable>
+                            ) : null
+                        }
+                    />
                 </HStack>
             )}
 
