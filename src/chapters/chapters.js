@@ -22,30 +22,27 @@ const chapterReducer = (state, action) => {
 };
 
 const ChapterItem = memo(({ item, onToggle, isReadOnly }) => {
-    const handleToggle = () => {
-        if (!isReadOnly) {
-            onToggle();
-        }
-    };
-
+    // A função handleToggle agora é chamada diretamente pelo Pressable,
+    // envolvendo tanto o texto quanto a Checkbox.
     return (
-        <Box flex={1} flexDirection="column">
+        <Pressable onPress={() => !isReadOnly && onToggle()} flex={1} flexDirection="column">
             <HStack w="100%" justifyContent="space-between" alignItems="center" p="2" borderBottomWidth="1" borderBottomColor="gray.900">
                 <Checkbox
                     isChecked={item.read}
-                    onChange={handleToggle}
+                    // A Checkbox agora é um elemento puramente visual sem onChange
                     aria-label={`Capítulo ${item.number} ${item.read ? 'marcado como lido' : 'não lido'}`}
                     accessibilityLabel={`Capítulo ${item.number} ${item.read ? 'marcado como lido' : 'não lido'}`}
                     value="green"
                     colorScheme="green"
+                    // Importante: Não permita que a Checkbox altere seu estado visualmente
+                    // por interação, isso é agora gerenciado pelo estado do item e o Pressable
                 />
-                <Pressable flex={1} onPress={handleToggle}>
-                    <Text px="2">Capítulo {item.number}</Text>
-                </Pressable>
+                <Text px="2" flex={1}>Capítulo {item.number}</Text>
             </HStack>
-        </Box>
+        </Pressable>
     );
 });
+
 
 export default function Chapters({ route }) {
     const book = route.params.book;

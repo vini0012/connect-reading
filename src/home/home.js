@@ -104,7 +104,7 @@ export default function Home({ navigation }) {
                         variant="underlined"
                         placeholder="Pesquisar"
                         width="100%"
-                        py="1"
+                        py="1.5"
                         px="2"
                         fontSize="14"
                         onChangeText={handleSearch}
